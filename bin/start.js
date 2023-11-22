@@ -7,8 +7,9 @@
 import app from "../app.js";
 import createDebugger from "debug";
 import http from "http";
+import "dotenv/config";
 
-const debug = createDebugger('archi-o-web:server')
+const debug = createDebugger("pulsepulse:server");
 /**
  * Get port from environment and store in Express.
  */
