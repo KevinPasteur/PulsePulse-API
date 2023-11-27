@@ -66,6 +66,30 @@ const loginUser = asyncHandler(async (req, res, next) => {
     .catch(next);
 });
 
+const updateUser = asyncHandler(async (req, res, next) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: "Data to update can not be empty!",
+    });
+  }
+  const id = req.params.id;
+  // Attempt to find a user with the provided id
+  User.findByIdAndUpdate(id, req.body)
+    .then((data) => {
+      if (!data) {
+        res.status(404).send({
+          message: `User was not found!`,
+        });
+      } else res.send({ message: "User was updated successfully." });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Error updating user",
+      });
+    })
+    .catch(next);
+});
+
 //@desc Current user info
 //@route POST /api/users/current
 //@access private
@@ -76,4 +100,4 @@ const currentUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, currentUser };
+export { registerUser, loginUser, currentUser, updateUser };
