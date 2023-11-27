@@ -101,3 +101,67 @@ describe("DELETE /api/v1/users/:id", function () {
     expect(user.status).toEqual("deleted");
   });
 });
+
+describe("GET /api/v1/users", function () {
+  let johnDoe;
+  let janeDoe;
+
+  beforeEach(async function () {
+    const hashedPassword = await bcrypt.hash("1234", 10);
+    // Create 2 users before list them.
+    [johnDoe, janeDoe] = await Promise.all([
+      User.create({
+        username: "johnDoe",
+        email: "JohnDoe@example.com",
+        password: hashedPassword,
+        role: "admin",
+      }),
+      User.create({
+        username: "janeDoe",
+        email: "janeDoe@example.com",
+        password: hashedPassword,
+        role: "user",
+      }),
+    ]);
+  });
+
+  it("should retrieve the list of users", async function () {
+    const token = await generateValidAdminJwt(johnDoe);
+    const res = await supertest(app)
+      .get("/api/v1/users")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(200)
+      .expect("Content-Type", /json/);
+
+    expect(res.body).toBeArray();
+    expect(res.body).toHaveLength(2);
+
+    expect(res.body[0]).toBeObject();
+    expect(res.body[0]._id).toEqual(janeDoe.id);
+    expect(res.body[0].username).toEqual("janeDoe");
+    expect(res.body[0]).toContainAllKeys([
+      "_id",
+      "username",
+      "email",
+      "role",
+      "createdAt",
+      "updatedAt",
+      "exercises",
+      "workouts",
+    ]);
+
+    expect(res.body[1]).toBeObject();
+    expect(res.body[1]._id).toEqual(johnDoe.id);
+    expect(res.body[1].username).toEqual("johnDoe");
+    expect(res.body[1]).toContainAllKeys([
+      "_id",
+      "username",
+      "email",
+      "role",
+      "createdAt",
+      "updatedAt",
+      "exercises",
+      "workouts",
+    ]);
+  });
+});
