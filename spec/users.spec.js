@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import supertest from "supertest";
 import app from "../app.js";
-import { cleanUpDatabase, generateValidJwt } from "./utils.js";
+import { cleanUpDatabase, generateValidJwt, generateValidAdminJwt } from "./utils.js";
 import "dotenv/config";
 import bcrypt from "bcrypt";
 
@@ -90,7 +90,7 @@ describe("DELETE /api/v1/users/:id", function () {
   });
 
   it("should remove an user", async function () {
-    const token = await generateValidJwt(johnDoe);
+    const token = await generateValidAdminJwt(johnDoe);
     await supertest(app)
       .delete("/api/v1/users/" + janeDoe.id)
       .auth(token, { type: "bearer" })
