@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/", indexRouter);
 app.use("/api/v1/users", usersRouter);
-app.use("/api/v1/exercises", usersRouter);
+app.use("/api/v1/exercises", exercisesRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
