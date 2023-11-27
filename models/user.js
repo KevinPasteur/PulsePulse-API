@@ -2,14 +2,29 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 // Define the schema for users
-const userSchema = new Schema({
-  name: {
-    type: String,
-    unique: true,
+const userSchema = new Schema(
+  {
+    username: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    status: String,
+    role: String,
+    exercises: [{ type: Schema.Types.ObjectId, ref: "Exercise" }],
+    workouts: [{ type: Schema.Types.ObjectId, ref: "Workout" }],
   },
-  password: String,
-  role: String,
-});
+  { timestamps: true }
+);
 
 userSchema.set("toJSON", {
   transform: transformJsonUser,
