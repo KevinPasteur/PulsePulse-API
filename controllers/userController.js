@@ -129,4 +129,16 @@ const currentUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, currentUser, updateUser, deleteUser };
+//@desc List all users
+//@route GET /api/users
+//@access private
+const getUsers = asyncHandler(async (req, res) => {
+  try {
+    const users = await User.find().sort("username").exec();
+    return res.send(users);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+export { registerUser, loginUser, currentUser, updateUser, deleteUser, getUsers };
