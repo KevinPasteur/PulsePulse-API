@@ -90,6 +90,35 @@ const updateUser = asyncHandler(async (req, res, next) => {
     .catch(next);
 });
 
+//@desc Delete user
+//@route DELETE /api/users/:id
+//@access private
+const deleteUser = asyncHandler(async (req, res) => {
+  if (!req.params.id) {
+    res.status(400).send({
+      message: "User not provided",
+    });
+  }
+
+  const id = req.params.id;
+
+  await User.findByIdAndUpdate(id, { status: "deleted", updatedAt: new Date() })
+    .then((data) => {
+      if (!data) {
+        res.status(404).send({
+          message: `User not found.`,
+        });
+      } else {
+        res.status(200).send({ message: "User deleted successfully." });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message,
+      });
+    });
+});
+
 //@desc Current user info
 //@route POST /api/users/current
 //@access private
@@ -100,4 +129,4 @@ const currentUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, currentUser, updateUser };
+export { registerUser, loginUser, currentUser, updateUser, deleteUser };
