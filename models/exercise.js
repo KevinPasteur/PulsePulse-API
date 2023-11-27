@@ -2,23 +2,39 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 // Define the schema for users
-const exerciseSchema = new Schema({
-  name: {
-    type: String,
-    unique: true,
+const exerciseSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+    },
+    description: String,
+    duration: {
+      type: Number,
+      required: true,
+    },
+    repetitions: {
+      type: Number,
+      required: true,
+    },
+    level: {
+      type: String,
+      required: true,
+    },
+    bodyPart: {
+      type: String,
+      required: true,
+    },
+    videoLink: String,
+    commentLink: String,
+    creator: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    workouts: [{ type: Schema.Types.ObjectId, ref: "Workout" }],
   },
-  description: String,
-  duration: Number,
-  repetitions: Number,
-  level: String,
-  bodyPart: String,
-  videoLink: String,
-  commentLink: String,
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-});
+  { timestamps: true }
+);
 
 exerciseSchema.set("toJSON", {
   transform: transformJsonExercise,
