@@ -6,13 +6,12 @@ import {
   currentUser,
   updateUser,
   deleteUser,
+  getUsers,
 } from "../controllers/userController.js";
 import { authenticate, authorize } from "../middleware/validateTokenHandler.js";
 const router = express.Router();
 
-router.get("/", function (req, res, next) {
-  res.send("Got a response from the users route");
-});
+router.get("/", authenticate, authorize("admin"), getUsers);
 
 router.put("/:id", authenticate, function (req, res, next) {
   User.findById(req.params.id)
