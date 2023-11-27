@@ -14,17 +14,5 @@ router.get("/", function (req, res, next) {
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.post("/test", authenticate, currentUser);
-
-router.get("/test", function (req, res, next) {
-  User.find()
-    .sort("name")
-    .exec()
-    .then((users) => {
-      console.log(users);
-      res.send(users);
-    })
-    .catch(next);
-});
 
 export default router;
