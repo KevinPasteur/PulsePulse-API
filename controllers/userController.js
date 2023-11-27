@@ -11,24 +11,30 @@ const signJwt = promisify(jwt.sign);
 //@route POST /api/users/register
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, password } = req.body;
-  if (!name || !password) {
+  const { username, email, password, role } = req.body;
+  if (!username || !password || !email) {
     return res.status(400).send({ error: "All fields are mandatory!" });
   }
-  const userAvailable = await User.findOne({ name });
+  const userAvailable = await User.findOne({ username, email });
   if (userAvailable) {
     return res.status(400).send({ error: "User already registered!" });
   }
 
   //Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
+
   const user = await User.create({
-    name,
+    username,
     password: hashedPassword,
+    email,
+    status: "normal",
+    role: role ?? "user",
   });
 
   if (user) {
-    return res.status(201).send({ _id: user.id, name: user.name });
+    return res
+      .status(201)
+      .send({ _id: user.id, username: user.username, email: user.email });
   } else {
     return res.status(400).send({ error: "User data is not valid" });
   }
