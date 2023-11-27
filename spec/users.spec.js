@@ -65,3 +65,39 @@ describe("PUT /api/v1/users/:id", function () {
     expect(user.email).toEqual("JohnDoee@example.com");
   });
 });
+
+describe("DELETE /api/v1/users/:id", function () {
+  let johnDoe;
+  let janeDoe;
+
+  beforeEach(async function () {
+    const hashedPassword = await bcrypt.hash("1234", 10);
+    // Create 2 users before delete Jane.
+    [johnDoe, janeDoe] = await Promise.all([
+      User.create({
+        username: "johnDoe",
+        email: "JohnDoe@example.com",
+        password: hashedPassword,
+        role: "admin",
+      }),
+      User.create({
+        username: "janeDoe",
+        email: "janeDoe@example.com",
+        password: hashedPassword,
+        role: "user",
+      }),
+    ]);
+  });
+
+  it("should remove an user", async function () {
+    const token = await generateValidJwt(johnDoe);
+    await supertest(app)
+      .delete("/api/v1/users/" + janeDoe.id)
+      .auth(token, { type: "bearer" })
+      .expect(200)
+      .expect("Content-Type", /json/);
+
+    const user = await User.findOne({ username: janeDoe.username });
+    expect(user.status).toEqual("deleted");
+  });
+});
