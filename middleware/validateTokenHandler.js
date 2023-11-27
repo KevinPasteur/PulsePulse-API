@@ -12,6 +12,11 @@ const authenticate = asyncHandler(async (req, res, next) => {
         return res.status(401).send({ error: "User is not authorized" });
       }
       req.currentUserId = payload.sub;
+
+      // Obtain the list of permissions from the "scope" claim.
+      const scope = payload.scope;
+      req.currentUserPermissions = scope ? scope.split(" ") : [];
+
       next();
     });
 
