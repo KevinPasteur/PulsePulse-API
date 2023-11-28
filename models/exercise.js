@@ -41,6 +41,10 @@ exerciseSchema.set("toJSON", {
 });
 
 function transformJsonExercise(doc, json, options) {
+  //Rename fields
+  json.id = json._id;
+  delete json._id;
+
   delete json.__v;
   return json;
 }

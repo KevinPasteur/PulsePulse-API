@@ -31,6 +31,10 @@ userSchema.set("toJSON", {
 });
 
 function transformJsonUser(doc, json, options) {
+  //Rename fields
+  json.id = json._id;
+  delete json._id;
+
   // Remove the hashed password from the generated JSON.
   delete json.password;
   delete json.__v;
