@@ -4,6 +4,7 @@ import logger from "morgan";
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
 import exercisesRouter from "./routes/exercises.js";
+import workoutsRouter from "./routes/workouts.js";
 import mongoose from "mongoose";
 import "dotenv/config";
 
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/", indexRouter);
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/exercises", exercisesRouter);
+app.use("/api/v1/workouts", workoutsRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
