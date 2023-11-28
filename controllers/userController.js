@@ -52,7 +52,11 @@ const loginUser = asyncHandler(async (req, res, next) => {
         // Define JWT expiration: current time + 1 week (in seconds)
         const exp = Math.floor(Date.now() / 1000) + 7 * 24 * 3600;
         // Create the payload for the JWT including the user ID and expiration
-        const payload = { sub: user._id.toString(), exp: exp };
+        const payload = {
+          sub: user._id.toString(),
+          exp: exp,
+          scope: user.role.toString(),
+        };
         // Sign the JWT and send it to the client
         return signJwt(payload, jwtSecret).then((jwt) => {
           console.log(`User ${user.name} logged in`);
@@ -141,4 +145,11 @@ const getUsers = asyncHandler(async (req, res) => {
   }
 });
 
-export { registerUser, loginUser, currentUser, updateUser, deleteUser, getUsers };
+export {
+  registerUser,
+  loginUser,
+  currentUser,
+  updateUser,
+  deleteUser,
+  getUsers,
+};
