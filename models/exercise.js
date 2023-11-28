@@ -22,7 +22,7 @@ const exerciseSchema = new Schema(
       required: true,
     },
     bodyPart: {
-      type: String,
+      type: Array,
       required: true,
     },
     videoLink: String,
