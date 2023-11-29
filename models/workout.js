@@ -6,13 +6,10 @@ const workoutSchema = new Schema(
   {
     name: {
       type: String,
-      unique: true,
       required: true,
     },
     description: {
       type: String,
-      unique: true,
-      required: true,
     },
     isPublic: {
       type: Boolean,
