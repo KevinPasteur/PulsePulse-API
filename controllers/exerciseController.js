@@ -43,14 +43,42 @@ const createExercise = asyncHandler(async (req, res) => {
   }
 });
 
-const getExercises = asyncHandler(async (req, res) => {
-  try {
-    const data = await Exercise.find().populate("creator");
-    console.log(data);
-    res.status(200).json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+const getExercises = asyncHandler(async (req, res, next) => {
+  let page;
+  let pageSize;
+  Exercise.find()
+    .countDocuments()
+    .then((total) => {
+      let query = Exercise.find().populate("creator");
+
+      // Parse the "page" param (default to 1 if invalid)
+      page = parseInt(req.query.page, 10);
+      if (isNaN(page) || page < 1) {
+        page = 1;
+      }
+      // Parse the "pageSize" param (default to 100 if invalid)
+      pageSize = parseInt(req.query.pageSize, 10);
+      if (isNaN(pageSize) || pageSize < 0 || pageSize > 100) {
+        pageSize = 100;
+      }
+      // Apply skip and limit to select the correct page of elements
+      query = query.skip((page - 1) * pageSize).limit(pageSize);
+
+      return query.exec().then((exercises) => {
+        return { total, exercises };
+      });
+    })
+    .then(({ total, exercises }) => {
+      res.send({
+        page: page,
+        pageSize: pageSize,
+        total: total,
+        data: exercises,
+      });
+    })
+    .catch((err) => {
+      next(err);
+    });
 });
 
 export { getExercises, createExercise };
