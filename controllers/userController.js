@@ -43,7 +43,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res, next) => {
   // Attempt to find a user with the provided name
-  User.findOne({ name: req.body.name })
+  User.findOne({ username: req.body.username })
     .exec()
     .then((user) => {
       if (!user) return res.sendStatus(401); // user not found
@@ -60,9 +60,9 @@ const loginUser = asyncHandler(async (req, res, next) => {
         };
         // Sign the JWT and send it to the client
         return signJwt(payload, jwtSecret).then((jwt) => {
-          console.log(`User ${user.name} logged in`);
+          console.log(`User ${user.username} logged in`);
           res.send({
-            message: `Welcome ${user.name}!`,
+            message: `Welcome ${user.username}!`,
             token: jwt,
           });
         });
@@ -139,11 +139,11 @@ const currentUser = asyncHandler(async (req, res) => {
 //@access private
 const getUsers = asyncHandler(async (req, res) => {
   let users = User.find();
-  console.log(req.query.status);
 
   if (req.query.status) {
     users = users.where("status").equals(req.query.status);
   }
+
   users
     .exec()
     .then((users) => res.send(users))
