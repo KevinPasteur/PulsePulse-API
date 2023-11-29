@@ -1,32 +1,30 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-// Define the schema for users
-const userSchema = new Schema(
+// Define the schema for workouts
+const workoutSchema = new Schema(
   {
-    username: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    email: {
-      type: String,
-      unique: true,
-      required: true,
-    },
-    password: {
+    name: {
       type: String,
       required: true,
     },
-    status: String,
-    role: String,
+    description: {
+      type: String,
+    },
+    isPublic: {
+      type: Boolean,
+      required: true,
+    },
+    creator: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     exercises: [{ type: Schema.Types.ObjectId, ref: "Exercise" }],
-    workouts: [{ type: Schema.Types.ObjectId, ref: "Workout" }],
   },
   { timestamps: true }
 );
 
-userSchema.set("toJSON", {
+workoutSchema.set("toJSON", {
   transform: transformJsonUser,
 });
 
@@ -42,4 +40,4 @@ function transformJsonUser(doc, json, options) {
 }
 
 // Create the model from the schema and export it
-export default mongoose.model("User", userSchema);
+export default mongoose.model("Workout", workoutSchema);

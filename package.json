@@ -4,25 +4,35 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "jest",
+    "test": "cross-env DATABASE_URL=mongodb://127.0.0.1/pulsepulse-test JWT_SECRET=secret node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose=false",
     "dev": "nodemon",
     "start": "node ./bin/start"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "cross-env": "^7.0.3",
     "debug": "~4.3.4",
     "dotenv": "^16.3.1",
     "express": "~4.18.2",
+    "express-async-handler": "^1.2.0",
     "http-errors": "^2.0.0",
+    "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.2.0",
     "mongoose": "^8.0.0",
-    "morgan": "~1.10.0"
+    "morgan": "~1.10.0",
+    "swagger-ui-express": "^5.0.0",
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "jest-extended": "^4.0.2",
     "nodemon": "^3.0.1",
     "supertest": "^6.3.3"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "jest-extended/all"
+    ]
   }
 }

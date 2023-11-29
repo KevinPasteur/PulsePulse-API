@@ -3,13 +3,25 @@ import createError from "http-errors";
 import logger from "morgan";
 import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/users.js";
+import exercisesRouter from "./routes/exercises.js";
+import workoutsRouter from "./routes/workouts.js";
 import mongoose from "mongoose";
+import fs from "fs";
+import yaml from "js-yaml";
+import swaggerUi from "swagger-ui-express";
+import "dotenv/config";
 
 const app = express();
 
-mongoose.connect(
-  process.env.DATABASE_URL ?? "mongodb://localhost:27017/pulsepulse"
-);
+mongoose
+  .connect(process.env.DATABASE_URL ?? "mongodb://localhost:27017/pulsepulse")
+  .then(() => {
+    console.log("Successfully connect to MongoDB.");
+  })
+  .catch((err) => {
+    console.error("Connection error", err);
+    process.exit();
+  });
 
 if (process.env.NODE_ENV !== "test") {
   mongoose.set("debug", true);
@@ -21,6 +33,13 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use("/", indexRouter);
 app.use("/api/v1/users", usersRouter);
+app.use("/api/v1/exercises", exercisesRouter);
+app.use("/api/v1/workouts", workoutsRouter);
+
+// Parse the OpenAPI document.
+const openApiDocument = yaml.load(fs.readFileSync("./openapi.yml"));
+// Serve the Swagger UI documentation.
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

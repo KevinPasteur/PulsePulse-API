@@ -1,0 +1,65 @@
+openapi: 3.1.0
+info:
+  description: "API REST pour l'application mobile de fitness PulsePulse"
+  version: "1.0.0"
+  title: "PulsePulse API"
+tags:
+  - name : Users
+    description: Operations about users
+  - name : Exercises
+    description: Access to exercises informations
+  - name : Workouts
+    description: Retrieve informations about the workouts
+paths:
+  /api/v1/users:
+    get:
+      tags:
+        - Users
+      summary: Retrieve a list of all users.
+      description: Return an array of all users
+      responses:
+        '200':
+          description: successful operation
+          content: 
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Users"
+                
+components:
+  schemas:
+    Users:
+      type: array
+      items:
+        anyOf:
+          - $ref: "#/components/schemas/User1"
+    User1:
+      type: object
+      properties:
+        username:
+          type: string
+          example: julienS
+        email:
+          type: string
+          example: julien@pulsepulse.ch
+        status:
+          type: string
+          example: normal
+        role:
+          type: string
+          example: user
+        exercises:
+          type: array
+          example: [656608f69530cd508609438a, 656608f69530cd508607430a]
+        workouts:
+          type: array
+          example: [656608f69530cd508609756b]
+        createdAt:
+          type: date
+          example: 2023-11-28T15:36:22.095Z
+        updatedAt:
+          type: date
+          example: 2023-11-28T15:36:22.095Z
+        id:
+          type: integer
+          example: 656608f69530cd508607694a
+
