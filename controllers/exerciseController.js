@@ -81,4 +81,35 @@ const getExercises = asyncHandler(async (req, res, next) => {
     });
 });
 
-export { getExercises, createExercise };
+const updateExercise = asyncHandler(async (req, res, next) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: "Data to update can not be empty!",
+    });
+  }
+  const id = req.params.id;
+
+  //If not an admin do not allow modification of the creator field
+  if (!req.currentUserPermissions.includes("admin") && req.body.creator) {
+    return res.status(403).send({
+      message: "You are not authorize to change the creator",
+    });
+  }
+
+  Exercise.findByIdAndUpdate(id, req.body)
+    .then((data) => {
+      if (!data) {
+        res.status(404).send({
+          message: `Exercise was not found!`,
+        });
+      } else res.send({ message: "Exercise was updated successfully." });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Error updating exercise",
+      });
+    })
+    .catch(next);
+});
+
+export { getExercises, createExercise, updateExercise };
