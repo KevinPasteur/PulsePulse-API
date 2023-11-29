@@ -28,7 +28,7 @@ const registerUser = asyncHandler(async (req, res) => {
     username,
     password: hashedPassword,
     email,
-    status: "normal",
+    status: "active",
     role: role ?? "user",
   });
 
