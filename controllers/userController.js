@@ -4,6 +4,7 @@ import { promisify } from "util";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import { jwtSecret } from "../config.js";
+import { ObjectId } from "mongodb";
 
 const signJwt = promisify(jwt.sign);
 
@@ -137,12 +138,16 @@ const currentUser = asyncHandler(async (req, res) => {
 //@route GET /api/users
 //@access private
 const getUsers = asyncHandler(async (req, res) => {
-  try {
-    const users = await User.find().sort("username").exec();
-    return res.send(users);
-  } catch (error) {
-    return next(error);
+  let users = User.find();
+  console.log(req.query.status);
+
+  if (req.query.status) {
+    users = users.where("status").equals(req.query.status);
   }
+  users
+    .exec()
+    .then((users) => res.send(users))
+    .catch((err) => next(err));
 });
 
 export {
