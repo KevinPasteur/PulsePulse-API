@@ -42,7 +42,7 @@ export function createWebSocketServer(httpServer) {
 }
 
 export function broadcastMessage(message, action, type, info = null) {
-  const messageFormat = {
+  const messageFormatted = {
     message: message,
     action: action,
     type: type,
@@ -53,7 +53,7 @@ export function broadcastMessage(message, action, type, info = null) {
   const sendPromises = clients.map((client) => {
     return new Promise((resolve, reject) => {
       try {
-        client.send(JSON.stringify(messageFormat), (error) => {
+        client.send(JSON.stringify(messageFormatted), (error) => {
           if (error) {
             reject({
               success: false,
