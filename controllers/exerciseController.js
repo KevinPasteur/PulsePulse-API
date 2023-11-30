@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Exercise from "../models/exercise.js";
 import User from "../models/user.js";
+import { broadcastMessage } from "../ws.js";
 
 const createExercise = asyncHandler(async (req, res) => {
   const { name, duration, repetitions, level, bodyPart } = req.body;
@@ -30,14 +31,28 @@ const createExercise = asyncHandler(async (req, res) => {
   await exercise.validate();
 
   if (exercise) {
-    return res.status(201).send({
+    const exerciseFormated = {
       _id: exercise.id,
       name: exercise.name,
       duration: exercise.duration,
       repetitions: exercise.repetitions,
       level: exercise.level,
       bodyPart: exercise.bodyPart,
-    });
+      status: "enabled",
+    };
+
+    try {
+      broadcastMessage(
+        exerciseFormated,
+        "create",
+        "exercise",
+        "New exercise created"
+      );
+    } catch (err) {
+      return res.status(400).send({ error: err });
+    }
+
+    return res.status(201).send(exerciseFormated);
   } else {
     return res.status(400).send({ error: "Exercise data is not valid" });
   }
@@ -81,35 +96,73 @@ const getExercises = asyncHandler(async (req, res, next) => {
     });
 });
 
-const updateExercise = asyncHandler(async (req, res, next) => {
-  if (!req.body) {
-    return res.status(400).send({
-      message: "Data to update can not be empty!",
+const updateExerciseWithSpecificProperties = asyncHandler(
+  async (req, res, next) => {
+    if (!req.body) {
+      return res.status(400).send({
+        message: "Data to update can not be empty!",
+      });
+    }
+
+    const id = req.params.id;
+
+    //If not an admin do not allow modification of the creator field
+    if (!req.currentUserPermissions.includes("admin") && req.body.creator) {
+      return res.status(403).send({
+        message: "You are not authorize to change the creator",
+      });
+    }
+
+    Exercise.findByIdAndUpdate(id, req.body)
+      .then((data) => {
+        if (!data) {
+          res.status(404).send({
+            message: `Exercise was not found!`,
+          });
+        } else res.send({ message: "Exercise was updated successfully." });
+      })
+      .catch((err) => {
+        res.status(500).send({
+          message: "Error updating exercise",
+        });
+      })
+      .catch(next);
+  }
+);
+
+//Set the field status to disabled
+const deleteExercise = asyncHandler(async (req, res, next) => {
+  if (!req.params.id) {
+    res.status(400).send({
+      message: "Exercise not provided",
     });
   }
+
   const id = req.params.id;
 
-  //If not an admin do not allow modification of the creator field
-  if (!req.currentUserPermissions.includes("admin") && req.body.creator) {
-    return res.status(403).send({
-      message: "You are not authorize to change the creator",
-    });
-  }
-
-  Exercise.findByIdAndUpdate(id, req.body)
+  await Exercise.findByIdAndUpdate(id, {
+    status: "disabled",
+    updatedAt: new Date(),
+  })
     .then((data) => {
       if (!data) {
         res.status(404).send({
-          message: `Exercise was not found!`,
+          message: `Exercise not found.`,
         });
-      } else res.send({ message: "Exercise was updated successfully." });
+      } else {
+        res.status(200).send({ message: "Exercise deleted successfully." });
+      }
     })
     .catch((err) => {
       res.status(500).send({
-        message: "Error updating exercise",
+        message: err.message,
       });
-    })
-    .catch(next);
+    });
 });
 
-export { getExercises, createExercise, updateExercise };
+export {
+  getExercises,
+  createExercise,
+  updateExerciseWithSpecificProperties,
+  deleteExercise,
+};
