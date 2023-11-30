@@ -14,7 +14,7 @@ const createWorkout = asyncHandler(async (req, res) => {
   });
 
   try {
-    await workout.validate(); // Uncomment this line to trigger validation
+    await workout.validate();
   } catch (err) {
     return res.status(400).send(err);
   }
