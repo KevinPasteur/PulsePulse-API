@@ -103,6 +103,40 @@ const getPublicWorkouts = asyncHandler(async (req, res) => {
     });
 });
 
+const updateWorkoutWithSpecificProperties = asyncHandler(
+  async (req, res, next) => {
+    if (!req.body) {
+      return res.status(400).send({
+        message: "Data to update can not be empty!",
+      });
+    }
+
+    const id = req.params.id;
+
+    //If not an admin do not allow modification of the creator field
+    if (!req.currentUserPermissions.includes("admin") && req.body.creator) {
+      return res.status(403).send({
+        message: "You are not authorize to change the creator",
+      });
+    }
+
+    Workout.findByIdAndUpdate(id, req.body)
+      .then((data) => {
+        if (!data) {
+          res.status(404).send({
+            message: `Workout was not found!`,
+          });
+        } else res.send({ message: "Workout was updated successfully." });
+      })
+      .catch((err) => {
+        res.status(500).send({
+          message: "Error updating workout",
+        });
+      })
+      .catch(next);
+  }
+);
+
 const deleteAWorkout = asyncHandler(async (req, res) => {
   Workout.deleteOne({ _id: req.params.id })
     .then((data) => {
@@ -123,4 +157,10 @@ const deleteAWorkout = asyncHandler(async (req, res) => {
 
 const removeAnExerciseFromAWorkout = asyncHandler(async (req, res) => {});
 
-export { createWorkout, getWorkouts, getPublicWorkouts, deleteAWorkout };
+export {
+  createWorkout,
+  getWorkouts,
+  getPublicWorkouts,
+  deleteAWorkout,
+  updateWorkoutWithSpecificProperties,
+};
