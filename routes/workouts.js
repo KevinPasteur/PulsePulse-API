@@ -5,6 +5,7 @@ import {
   getPublicWorkouts,
   createWorkout,
   deleteAWorkout,
+  updateWorkoutWithSpecificProperties,
 } from "../controllers/workoutController.js";
 import { authenticate } from "../middleware/validateTokenHandler.js";
 import Workout from "../models/workout.js";
@@ -27,14 +28,28 @@ router.get("/", authenticate, function (req, res, next) {
 
 router.post("/", authenticate, createWorkout);
 
-router.patch("/:id", authenticate, function (req, res, next) {});
+router.patch("/:id", authenticate, function (req, res, next) {
+  Workout.findById(req.params.id)
+    .exec()
+    .then((workout) => {
+      const authorized =
+        req.currentUserPermissions.includes("admin") ||
+        req.currentUserId === workout.creator._id.toString();
+
+      if (!authorized) {
+        return res
+          .status(403)
+          .send({ error: "You are not authorize to perform that" });
+      }
+      updateWorkoutWithSpecificProperties(req, res);
+    })
+    .catch(next);
+});
 
 router.delete("/:id", authenticate, function (req, res, next) {
   Workout.findById(req.params.id)
     .exec()
     .then((workout) => {
-      // The user is authorized to edit the thing only if he or she is
-      // the owner of the thing, or if he or she is an administrator.
       const authorized =
         req.currentUserPermissions.includes("admin") ||
         req.currentUserId === workout.creator._id.toString();
