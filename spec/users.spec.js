@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 import supertest from "supertest";
 import app from "../app.js";
-import { cleanUpDatabase, generateValidJwt, generateValidAdminJwt } from "./utils.js";
+import {
+  cleanUpDatabase,
+  generateValidJwt,
+  generateValidAdminJwt,
+} from "./utils.js";
 import "dotenv/config";
 import bcrypt from "bcrypt";
 
@@ -34,7 +38,7 @@ describe("POST /api/v1/users", function () {
   });
 });
 
-describe("PUT /api/v1/users/:id", function () {
+describe("PATCH /api/v1/users/:id", function () {
   let johnDoe;
 
   beforeEach(async function () {
@@ -50,10 +54,10 @@ describe("PUT /api/v1/users/:id", function () {
     ]);
   });
 
-  it("should update an user", async function () {
+  it("should update the email of an user", async function () {
     const token = await generateValidJwt(johnDoe);
     await supertest(app)
-      .put("/api/v1/users/" + johnDoe.id)
+      .patch("/api/v1/users/" + johnDoe.id)
       .auth(token, { type: "bearer" })
       .send({
         email: "JohnDoee@example.com",
@@ -98,7 +102,7 @@ describe("DELETE /api/v1/users/:id", function () {
       .expect("Content-Type", /json/);
 
     const user = await User.findOne({ username: janeDoe.username });
-    expect(user.status).toEqual("deleted");
+    expect(user.status).toEqual("disabled");
   });
 });
 
@@ -137,10 +141,10 @@ describe("GET /api/v1/users", function () {
     expect(res.body).toHaveLength(2);
 
     expect(res.body[0]).toBeObject();
-    expect(res.body[0]._id).toEqual(janeDoe.id);
-    expect(res.body[0].username).toEqual("janeDoe");
+    expect(res.body[0].id).toEqual(johnDoe.id);
+    expect(res.body[0].username).toEqual("johnDoe");
     expect(res.body[0]).toContainAllKeys([
-      "_id",
+      "id",
       "username",
       "email",
       "role",
@@ -151,10 +155,10 @@ describe("GET /api/v1/users", function () {
     ]);
 
     expect(res.body[1]).toBeObject();
-    expect(res.body[1]._id).toEqual(johnDoe.id);
-    expect(res.body[1].username).toEqual("johnDoe");
+    expect(res.body[1].id).toEqual(janeDoe.id);
+    expect(res.body[1].username).toEqual("janeDoe");
     expect(res.body[1]).toContainAllKeys([
-      "_id",
+      "id",
       "username",
       "email",
       "role",
