@@ -154,7 +154,6 @@ const updateExerciseWithSpecificProperties = asyncHandler(
   }
 );
 
-//Set the field status to disabled
 const deleteAnExercise = asyncHandler(async (req, res, next) => {
   if (!req.params.id) {
     res.status(400).send({
