@@ -16,7 +16,9 @@ paths:
       tags:
         - Users
       summary: Récupérer la liste des utilisateurs
-      description: Retourne un tableau contenant les utilisateurs
+      description: Retourne un tableau contenant les utilisateurs / Nécessite d'être authentifié avec un token JWT
+      security:
+        - bearerAuth: []
       responses:
         "200":
           description: OK
@@ -112,13 +114,446 @@ paths:
                   message:
                     type: string
                     example: User not found
+  /api/v1/users/{id}:
+    patch:
+      tags:
+        - Users
+      summary: Permet de modifier partiellement un utilisateur
+      description: Permet de modifier partiellement un utilisateur / Nécessite d'être authentifié avec un token JWT / Pour modifier le champ "role" un compte avec le status "Admin" est demandé
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Modifie partiellement les données d'un utilisateur avec les champs trouvés dans la requête
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: julien2
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    example: julien2
+                  email:
+                    type: string
+                    example: julien@pulsepulse.ch
+                  status:
+                    type: string
+                    example: normal
+                  role:
+                    type: string
+                    example: user
+                  exercises:
+                    type: array
+                    example:
+                      [656608f69530cd508609438a, 656608f69530cd508607430a]
+                  workouts:
+                    type: array
+                    example: [656608f69530cd508609756b]
+                  createdAt:
+                    type: date
+                    example: 2023-11-28T15:36:22.095Z
+                  updatedAt:
+                    type: date
+                    example: 2023-11-28T15:36:22.095Z
+                  id:
+                    type: integer
+                    example: 656608f69530cd508607694a
+
+        "400":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data to update can not be empty!
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to change role
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User was not found!
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating user
+
+  /api/v1/exercises:
+    get:
+      tags:
+        - Exercises
+      summary: Récupérer la liste des exercices
+      description: Retourne les exercices sous forme de pagination / Nécessite d'être authentifié avec un token JWT
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Le numéro de la page
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+          description: Le nombre d'exercice a retourné dans une page / min 1, max 100
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exercise"
+    post:
+      tags:
+        - Exercises
+      summary: Permet de créer un exercice
+      description: Créer un exercice disponible pour tous / Nécessite d'être authentifié avec un token JWT
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Crée un exercice
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: pompe
+                description:
+                  type: string
+                  example: exercice pour les bras, pecs et épaules
+                duration:
+                  type: number
+                  example: 10
+                repetitions:
+                  type: number
+                  example: 10
+                sets:
+                  type: number
+                  example: 3
+                level:
+                  type: string
+                  example: facile
+                bodyPart:
+                  type: array
+                  example: ["epaules", "bras", "pecs"]
+                videoLink:
+                  type: string
+                  example: url
+                commentLink:
+                  type: string
+                  example: url
+              required:
+                - name
+                - level
+                - bodyPart
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 6568c8ca398847becdd791f4
+                  name:
+                    type: string
+                    example: pompe
+                  description:
+                    type: string
+                    example: exercice pour les bras, pecs et épaules
+                  duration:
+                    type: number
+                    example: 10
+                  repetitions:
+                    type: number
+                    example: 10
+                  sets:
+                    type: number
+                    example: 3
+                  level:
+                    type: string
+                    example: facile
+                  bodyPart:
+                    type: array
+                    example: ["epaules", "bras", "pecs"]
+                  videoLink:
+                    type: string
+                    example: url
+                  commentLink:
+                    type: string
+                    example: url
+                  status:
+                    type: string
+                    example: active
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Exercise data is not valid
+  /api/v1/exercises/{id}:
+    patch:
+      tags:
+        - Exercises
+      summary: Permet de modifier partiellement un exercice
+      description: Permet de modifier partiellement un exercice / Nécessite d'être authentifié avec un token JWT / Pour modifier le champ "creator" un compte avec le status "Admin" est demandé / Un utilisateur basique ne peut pas modifier un exercice qu'il n'a pas créé
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Modifie partiellement les données d'un exercice avec les champs trouvés dans la requête
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                repetitions:
+                  type: number
+                  example: 8
+                sets:
+                  type: number
+                  example: 4
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: pompe
+                  description:
+                    type: string
+                    example: exercice pour les bras, pecs et épaules
+                  duration:
+                    type: number
+                    example: 10
+                  repetitions:
+                    type: number
+                    example: 8
+                  sets:
+                    type: number
+                    example: 4
+                  level:
+                    type: string
+                    example: facile
+                  bodyPart:
+                    type: array
+                    example: [epaules, bras, pecs]
+                  videoLink:
+                    type: string
+                    example: url
+                  commentLink:
+                    type: string
+                    example: url
+                  creator:
+                    type: string
+                    example: 6568d0c34b9655a4e9a77777
+                  workouts:
+                    type: array
+                    example:
+                      [656608f69530cd508609438a, 656608f69530cd508607430a]
+                  status:
+                    type: string
+                    example: active
+                  createdAt:
+                    type: date
+                    example: 2023-11-28T15:36:22.095Z
+                  updatedAt:
+                    type: date
+                    example: 2023-11-28T15:36:22.095Z
+                  id:
+                    type: integer
+                    example: 656608f69530cd508607694a
+
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data to update can not be empty!
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to change creator
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Exercise was not found!
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating exercise
+    delete:
+      tags:
+        - Exercises
+      summary: Supprimer un exercice
+      description: Passe le status de l'exercice en "disabled" / Nécessite d'être authentifié avec un token JWT / Un utilisateur ne peut pas supprimer un exercice qu'il n'a pas créé
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Exercise deleted successfully.
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Exercise not provided
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorize to perform that
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Exercise was not found!
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating exercise
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Users:
       type: array
       items:
         anyOf:
           - $ref: "#/components/schemas/User1"
+    Exercise:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        pageSize:
+          type: number
+          example: 1
+        total:
+          type: number
+          example: 1
+        data:
+          type: array
+          example:
+            [
+              {
+                "workouts": [],
+                "name": "pompe",
+                "duration": 20,
+                "repetitions": 10,
+                "level": "facile",
+                "bodyPart": ["epaules", "bras", "pecs"],
+                "creator": "656608f69530cd508607694a",
+                "createdAt": "2023-11-26T14:42:29.705Z",
+                "updatedAt": "2023-11-26T14:42:29.705Z",
+                "id": "656359551fa21c4115fd3807",
+              },
+            ]
     User1:
       type: object
       properties:
