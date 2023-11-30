@@ -15,11 +15,8 @@ const createExercise = asyncHandler(async (req, res) => {
     videoLink,
     commentLink,
   } = req.body;
-  if (!name || !level || !bodyPart) {
-    return res.status(400).send({ error: "All fields are mandatory!" });
-  }
 
-  const exercise = await Exercise.create({
+  const exercise = new Exercise({
     name,
     description,
     duration,
@@ -33,6 +30,14 @@ const createExercise = asyncHandler(async (req, res) => {
     status: "enabled",
   });
 
+  try {
+    await exercise.validate();
+  } catch (err) {
+    return res.status(400).send(err);
+  }
+
+  await exercise.save();
+
   await User.findByIdAndUpdate(
     req.currentUserId,
     {
@@ -42,8 +47,6 @@ const createExercise = asyncHandler(async (req, res) => {
     },
     { new: true, useFindAndModify: false }
   );
-
-  await exercise.validate();
 
   if (exercise) {
     const exerciseFormatted = {
@@ -71,7 +74,7 @@ const createExercise = asyncHandler(async (req, res) => {
       return res.status(400).send({ error: err });
     }
 
-    return res.status(201).send(exerciseFormated);
+    return res.status(201).send(exerciseFormatted);
   } else {
     return res.status(400).send({ error: "Exercise data is not valid" });
   }
@@ -90,11 +93,13 @@ const getExercises = asyncHandler(async (req, res, next) => {
       if (isNaN(page) || page < 1) {
         page = 1;
       }
+
       // Parse the "pageSize" param (default to 100 if invalid)
       pageSize = parseInt(req.query.pageSize, 10);
       if (isNaN(pageSize) || pageSize < 0 || pageSize > 100) {
         pageSize = 100;
       }
+
       // Apply skip and limit to select the correct page of elements
       query = query.skip((page - 1) * pageSize).limit(pageSize);
 
