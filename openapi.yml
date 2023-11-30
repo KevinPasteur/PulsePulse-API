@@ -4,27 +4,114 @@ info:
   version: "1.0.0"
   title: "PulsePulse API"
 tags:
-  - name : Users
+  - name: Users
     description: Operations about users
-  - name : Exercises
+  - name: Exercises
     description: Access to exercises informations
-  - name : Workouts
+  - name: Workouts
     description: Retrieve informations about the workouts
 paths:
   /api/v1/users:
     get:
       tags:
         - Users
-      summary: Retrieve a list of all users.
-      description: Return an array of all users
+      summary: Récupérer la liste des utilisateurs
+      description: Retourne un tableau contenant les utilisateurs
       responses:
-        '200':
-          description: successful operation
-          content: 
+        "200":
+          description: OK
+          content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Users"
-                
+
+  /api/v1/users/register:
+    post:
+      tags:
+        - Users
+      summary: Permet de s'enregistrer
+      description: Enregistre un utilisateur à la plateforme
+      requestBody:
+        description: Crée un nouvel utilisateur
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: julien
+                  description: "Unique username for the user."
+                email:
+                  type: string
+                  format: email
+                  description: "Unique email for the user."
+                password:
+                  type: string
+                  format: password
+              required:
+                - username
+                - email
+                - password
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserRegister"
+        "400":
+          description: Bad Request / Champs manquants ou utilisateur déjà enregistré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User already registered!
+
+  /api/v1/users/login:
+    post:
+      tags:
+        - Users
+      summary: Permet de se connecter
+      description: Connecte un utilisateur à la plateforme et lui retourne un token JWT
+      requestBody:
+        description: Authentifie un utilisateur avec son username et son mot de passe. Retourne un token JWT si l'authentification est autorisée
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: julien
+                password:
+                  type: string
+                  format: password
+              required:
+                - username
+                - password
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserLogin"
+        "401":
+          description: Unauthorized / Utilisateur inconnu ou mot de passe incorrect
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found
 components:
   schemas:
     Users:
@@ -37,7 +124,7 @@ components:
       properties:
         username:
           type: string
-          example: julienS
+          example: julien
         email:
           type: string
           example: julien@pulsepulse.ch
@@ -62,4 +149,27 @@ components:
         id:
           type: integer
           example: 656608f69530cd508607694a
-
+    UserRegister:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 656608f69530cd508607694a
+        username:
+          type: string
+          example: julienS
+        email:
+          type: string
+          example: julien@pulsepulse.ch
+      required:
+        - username
+        - email
+    UserLogin:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Welcome julien !
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NTY4ZDBjMzRiOTY1NWE0ZTlhNzc3NzciLCJleHAiOjE3MDE5NzI5NzYsInNjb3BlIjoidXNMTM2ODExIKb6tqaXcl7bU3hgx63Nn0dCI6MTcw.oDn_2nDwl0Ty0AlciIsImlh3uk_5GEbZs
