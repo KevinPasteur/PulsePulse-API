@@ -66,7 +66,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
         };
         // Sign the JWT and send it to the client
         return signJwt(payload, jwtSecret).then((jwt) => {
-          console.log(`User ${user.username} logged in`);
           res.send({
             message: `Welcome ${user.username}!`,
             token: jwt,
@@ -87,6 +86,15 @@ const updateUserWithSpecificProperties = asyncHandler(
 
     const id = req.params.id;
 
+    // Prevent modification of role if not an admin
+    if (!req.currentUserPermissions.includes("admin")) {
+      if (req.body.role) {
+        return res.status(403).send({
+          message: "You are not authorized to change role",
+        });
+      }
+    }
+
     // Attempt to find a user with the provided id
     User.findByIdAndUpdate(id, req.body)
       .then((data) => {
@@ -94,7 +102,7 @@ const updateUserWithSpecificProperties = asyncHandler(
           res.status(404).send({
             message: `User was not found!`,
           });
-        } else res.send({ message: "User was updated successfully." });
+        } else res.send(data);
       })
       .catch((err) => {
         res.status(500).send({
@@ -104,37 +112,6 @@ const updateUserWithSpecificProperties = asyncHandler(
       .catch(next);
   }
 );
-
-const updateUserWithAllProperties = asyncHandler(async (req, res, next) => {
-  // Update properties present in the request body
-  if (req.body.username !== undefined) {
-    req.user.username = req.body.username;
-  }
-  if (req.body.email !== undefined) {
-    req.user.email = req.body.email;
-  }
-  if (req.body.password !== undefined) {
-    req.user.password = req.body.password;
-  }
-
-  //If not an admin do not allow modification of the creator field
-  if (req.currentUserPermissions.includes("admin")) {
-    if (req.body.status !== undefined) {
-      req.user.status = req.body.status;
-    }
-    if (req.body.role !== undefined) {
-      req.user.role = req.body.role;
-    }
-  }
-
-  req.user
-    .save()
-    .then((savedUser) => {
-      debug(`Updated user "${savedUser.username}"`);
-      res.send(savedUser);
-    })
-    .catch(next);
-});
 
 const deleteUser = asyncHandler(async (req, res) => {
   if (!req.params.id) {
@@ -190,7 +167,6 @@ export {
   loginUser,
   currentUser,
   updateUserWithSpecificProperties,
-  updateUserWithAllProperties,
   deleteUser,
   getUsers,
 };
