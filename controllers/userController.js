@@ -12,15 +12,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const userAvailable = await User.findOne({ username, email });
   if (userAvailable) {
-    return res.status(400).send({ error: "User already registered!" });
+    return res.status(400).send({ message: "User already registered!" });
   }
 
-  //Hash password
   let hashedPassword;
   try {
     hashedPassword = await bcrypt.hash(password, 10);
   } catch (error) {
-    return res.status(400).send({ error: "Password field required" });
+    return res.status(400).send({ message: "Password field required" });
   }
 
   const user = new User({
@@ -34,7 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
   try {
     await user.validate();
   } catch (err) {
-    return res.status(400).send(err);
+    return res.status(400).send({ message: err.message });
   }
 
   await user.save();
@@ -44,7 +43,7 @@ const registerUser = asyncHandler(async (req, res) => {
       .status(201)
       .send({ id: user.id, username: user.username, email: user.email });
   } else {
-    return res.status(400).send({ error: "User data is not valid" });
+    return res.status(400).send({ message: "User data is not valid" });
   }
 });
 
@@ -53,10 +52,10 @@ const loginUser = asyncHandler(async (req, res, next) => {
   User.findOne({ username: req.body.username })
     .exec()
     .then((user) => {
-      if (!user) return res.sendStatus(401); // user not found
+      if (!user) return res.status(401).send({ message: "User not found" }); // user not found
       // Compare the provided password with the stored hashed password
       return bcrypt.compare(req.body.password, user.password).then((valid) => {
-        if (!valid) return res.sendStatus(401); // wrong password
+        if (!valid) return res.status(401).send({ message: "Wrong password" }); // wrong password
         // Define JWT expiration: current time + 1 week (in seconds)
         const exp = Math.floor(Date.now() / 1000) + 7 * 24 * 3600;
         // Create the payload for the JWT including the user ID and expiration
