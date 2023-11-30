@@ -48,13 +48,13 @@ const createWorkout = asyncHandler(async (req, res) => {
           "New public workout created"
         );
       } catch (err) {
-        return res.status(400).send({ error: err });
+        return res.status(400).send({ message: err });
       }
     }
 
     return res.status(201).send(workoutFormatted);
   } else {
-    return res.status(400).send({ error: "Workout data is not valid" });
+    return res.status(400).send({ message: "Workout data is not valid" });
   }
 });
 
