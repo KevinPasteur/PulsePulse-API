@@ -4,13 +4,9 @@ import { promisify } from "util";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import { jwtSecret } from "../config.js";
-import { ObjectId } from "mongodb";
 
 const signJwt = promisify(jwt.sign);
 
-//@desc Register a user
-//@route POST /api/users/register
-//@access public
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password, role } = req.body;
 
@@ -141,9 +137,6 @@ const updateUserWithAllProperties = asyncHandler(async (req, res, next) => {
     .catch(next);
 });
 
-//@desc Delete user
-//@route DELETE /api/users/:id
-//@access private
 const deleteUser = asyncHandler(async (req, res) => {
   if (!req.params.id) {
     res.status(400).send({
@@ -173,9 +166,6 @@ const deleteUser = asyncHandler(async (req, res) => {
     });
 });
 
-//@desc Current user info
-//@route POST /api/users/current
-//@access private
 const currentUser = asyncHandler(async (req, res) => {
   const userFound = await User.findById(req.currentUserId);
   if (userFound) {
@@ -183,9 +173,6 @@ const currentUser = asyncHandler(async (req, res) => {
   }
 });
 
-//@desc List all users
-//@route GET /api/users
-//@access private
 const getUsers = asyncHandler(async (req, res) => {
   let users = User.find();
 
