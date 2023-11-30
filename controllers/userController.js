@@ -42,7 +42,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (user) {
     return res
       .status(201)
-      .send({ _id: user.id, username: user.username, email: user.email });
+      .send({ id: user.id, username: user.username, email: user.email });
   } else {
     return res.status(400).send({ error: "User data is not valid" });
   }

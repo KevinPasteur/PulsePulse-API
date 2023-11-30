@@ -31,10 +31,10 @@ describe("POST /api/v1/users", function () {
       .expect("Content-Type", /json/);
 
     expect(res.body).toBeObject();
-    expect(res.body._id).toBeString();
+    expect(res.body.id).toBeString();
     expect(res.body.username).toEqual("JohnDoe");
     expect(res.body.email).toEqual("JohnDoe@example.com");
-    expect(res.body).toContainAllKeys(["_id", "username", "email"]);
+    expect(res.body).toContainAllKeys(["id", "username", "email"]);
   });
 });
 
