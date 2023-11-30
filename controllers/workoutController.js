@@ -1,20 +1,25 @@
 import asyncHandler from "express-async-handler";
 import Workout from "../models/workout.js";
 import User from "../models/user.js";
+import { broadcastMessage } from "../ws.js";
 
 const createWorkout = asyncHandler(async (req, res) => {
   const { name, description, isPublic } = req.body;
 
-  if (!name || !isPublic) {
-    return res.status(400).send({ error: "All fields are mandatory!" });
-  }
-
-  const workout = await Workout.create({
+  const workout = new Workout({
     name,
     description,
     isPublic,
     creator: req.currentUserId,
   });
+
+  try {
+    await workout.validate(); // Uncomment this line to trigger validation
+  } catch (err) {
+    return res.status(400).send(err);
+  }
+
+  await workout.save();
 
   await User.findByIdAndUpdate(
     req.currentUserId,
@@ -26,8 +31,6 @@ const createWorkout = asyncHandler(async (req, res) => {
     { new: true, useFindAndModify: false }
   );
 
-  await workout.validate();
-
   if (workout) {
     const workoutFormatted = {
       _id: workout.id,
@@ -35,6 +38,19 @@ const createWorkout = asyncHandler(async (req, res) => {
       description: workout.description,
       isPublic: workout.isPublic,
     };
+
+    if (workout.isPublic) {
+      try {
+        broadcastMessage(
+          workoutFormatted,
+          "create",
+          "workout",
+          "New public workout created"
+        );
+      } catch (err) {
+        return res.status(400).send({ error: err });
+      }
+    }
 
     return res.status(201).send(workoutFormatted);
   } else {
