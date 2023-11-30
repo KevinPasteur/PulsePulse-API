@@ -13,24 +13,35 @@ const signJwt = promisify(jwt.sign);
 //@access public
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password, role } = req.body;
-  if (!username || !password || !email) {
-    return res.status(400).send({ error: "All fields are mandatory!" });
-  }
+
   const userAvailable = await User.findOne({ username, email });
   if (userAvailable) {
     return res.status(400).send({ error: "User already registered!" });
   }
 
   //Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 10);
+  } catch (error) {
+    return res.status(400).send({ error: "Password field required" });
+  }
 
-  const user = await User.create({
+  const user = new User({
     username,
     password: hashedPassword,
     email,
     status: "active",
     role: role ?? "user",
   });
+
+  try {
+    await user.validate();
+  } catch (err) {
+    return res.status(400).send(err);
+  }
+
+  await user.save();
 
   if (user) {
     return res
