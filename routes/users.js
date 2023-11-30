@@ -6,32 +6,25 @@ const router = express.Router();
 
 router.get("/", authenticate, authorize("admin"), userController.getUsers);
 
-router.put("/:id", authenticate, function (req, res, next) {
-  User.findById(req.params.id)
-    .exec()
-    .then((user) => {
-      if (user.id === req.currentUserId) {
-        userController.updateUserWithAllProperties(req, res);
-      } else
-        return res
-          .status(400)
-          .send({ error: "You are not authorize to perform that" });
-    })
-    .catch(next);
-});
-
 router.patch("/:id", authenticate, function (req, res, next) {
   User.findById(req.params.id)
     .exec()
     .then((user) => {
-      if (user.id === req.currentUserId) {
-        userController.updateUserWithSpecificProperties(req, res);
+      if (
+        user.id === req.currentUserId ||
+        req.currentUserPermissions.includes("admin")
+      ) {
+        userController.updateUserWithSpecificProperties(req, res, next);
       } else
         return res
           .status(400)
-          .send({ error: "You are not authorize to perform that" });
+          .send({ message: "You are not authorize to perform that" });
     })
-    .catch(next);
+    .catch((err) => {
+      return res.status(400).send({
+        message: "User not found",
+      });
+    });
 });
 
 router.post("/register", userController.registerUser);
