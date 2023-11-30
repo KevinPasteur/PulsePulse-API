@@ -15,11 +15,8 @@ const app = express();
 
 mongoose
   .connect(process.env.DATABASE_URL ?? "mongodb://localhost:27017/pulsepulse")
-  .then(() => {
-    console.log("Successfully connect to MongoDB.");
-  })
+  .then(() => {})
   .catch((err) => {
-    console.error("Connection error", err);
     process.exit();
   });
 
