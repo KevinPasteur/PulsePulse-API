@@ -11,11 +11,12 @@ const exerciseSchema = new Schema(
     description: String,
     duration: {
       type: Number,
-      required: true,
     },
     repetitions: {
       type: Number,
-      required: true,
+    },
+    sets: {
+      type: Number,
     },
     level: {
       type: String,
