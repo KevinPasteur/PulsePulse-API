@@ -4,18 +4,33 @@ import User from "../models/user.js";
 import { broadcastMessage } from "../ws.js";
 
 const createExercise = asyncHandler(async (req, res) => {
-  const { name, duration, repetitions, level, bodyPart } = req.body;
-  if (!name || !duration || !repetitions || !level || !bodyPart) {
+  const {
+    name,
+    description,
+    duration,
+    repetitions,
+    sets,
+    level,
+    bodyPart,
+    videoLink,
+    commentLink,
+  } = req.body;
+  if (!name || !level || !bodyPart) {
     return res.status(400).send({ error: "All fields are mandatory!" });
   }
 
   const exercise = await Exercise.create({
     name,
+    description,
     duration,
     repetitions,
+    sets,
     level,
     bodyPart,
+    videoLink,
+    commentLink,
     creator: req.currentUserId,
+    status: "enabled",
   });
 
   await User.findByIdAndUpdate(
@@ -31,19 +46,23 @@ const createExercise = asyncHandler(async (req, res) => {
   await exercise.validate();
 
   if (exercise) {
-    const exerciseFormated = {
+    const exerciseFormatted = {
       _id: exercise.id,
       name: exercise.name,
+      description: exercise.description,
       duration: exercise.duration,
       repetitions: exercise.repetitions,
+      sets: exercise.sets,
       level: exercise.level,
       bodyPart: exercise.bodyPart,
-      status: "enabled",
+      videoLink: exercise.videoLink,
+      commentLink: exercise.commentLink,
+      status: exercise.status,
     };
 
     try {
       broadcastMessage(
-        exerciseFormated,
+        exerciseFormatted,
         "create",
         "exercise",
         "New exercise created"
@@ -64,7 +83,7 @@ const getExercises = asyncHandler(async (req, res, next) => {
   Exercise.find()
     .countDocuments()
     .then((total) => {
-      let query = Exercise.find().populate("creator");
+      let query = Exercise.find();
 
       // Parse the "page" param (default to 1 if invalid)
       page = parseInt(req.query.page, 10);
@@ -131,7 +150,7 @@ const updateExerciseWithSpecificProperties = asyncHandler(
 );
 
 //Set the field status to disabled
-const deleteExercise = asyncHandler(async (req, res, next) => {
+const deleteAnExercise = asyncHandler(async (req, res, next) => {
   if (!req.params.id) {
     res.status(400).send({
       message: "Exercise not provided",
@@ -164,5 +183,5 @@ export {
   getExercises,
   createExercise,
   updateExerciseWithSpecificProperties,
-  deleteExercise,
+  deleteAnExercise,
 };
