@@ -4,19 +4,36 @@ import { authenticate, authorize } from "../middleware/validateTokenHandler.js";
 import {
   getExercises,
   createExercise,
-  updateExercise,
+  updateExerciseWithSpecificProperties,
+  deleteAnExercise,
 } from "../controllers/exerciseController.js";
 
 const router = express.Router();
 
 router.get("/", authenticate, getExercises);
 router.post("/", authenticate, createExercise);
-router.put("/:id", authenticate, function (req, res, next) {
+router.patch("/:id", authenticate, function (req, res, next) {
   Exercise.findById(req.params.id)
     .exec()
     .then((exercise) => {
-      // The user is authorized to edit the thing only if he or she is
-      // the owner of the thing, or if he or she is an administrator.
+      const authorized =
+        req.currentUserPermissions.includes("admin") ||
+        req.currentUserId === exercise.creator._id.toString();
+
+      if (!authorized) {
+        return res
+          .status(403)
+          .send({ error: "You are not authorize to perform that" });
+      }
+      updateExerciseWithSpecificProperties(req, res);
+    })
+    .catch(next);
+});
+
+router.delete("/:id", authenticate, function (req, res, next) {
+  Exercise.findById(req.params.id)
+    .exec()
+    .then((exercise) => {
       const authorized =
         req.currentUserPermissions.includes("admin") ||
         req.currentUserId === exercise.creator._id.toString();
@@ -27,9 +44,19 @@ router.put("/:id", authenticate, function (req, res, next) {
           .send({ error: "You are not authorize to perform that" });
       }
 
-      updateExercise(req, res);
+      if (!exercise) {
+        return res.status(400).send({
+          message: "This workout doesn't exist",
+        });
+      }
+
+      deleteAnExercise(req, res);
     })
-    .catch(next);
+    .catch((error) => {
+      res.status(400).send({
+        message: error.message,
+      });
+    });
 });
 
 export default router;
