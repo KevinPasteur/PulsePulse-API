@@ -33,7 +33,7 @@ const createExercise = asyncHandler(async (req, res) => {
   try {
     await exercise.validate();
   } catch (err) {
-    return res.status(400).send(err);
+    return res.status(400).send(err.message);
   }
 
   await exercise.save();
@@ -50,7 +50,7 @@ const createExercise = asyncHandler(async (req, res) => {
 
   if (exercise) {
     const exerciseFormatted = {
-      _id: exercise.id,
+      id: exercise.id,
       name: exercise.name,
       description: exercise.description,
       duration: exercise.duration,
@@ -71,12 +71,12 @@ const createExercise = asyncHandler(async (req, res) => {
         "New exercise created"
       );
     } catch (err) {
-      return res.status(400).send({ error: err });
+      return res.status(400).send({ message: err });
     }
 
     return res.status(201).send(exerciseFormatted);
   } else {
-    return res.status(400).send({ error: "Exercise data is not valid" });
+    return res.status(400).send({ message: "Exercise data is not valid" });
   }
 });
 
@@ -129,6 +129,7 @@ const updateExerciseWithSpecificProperties = asyncHandler(
     }
 
     const id = req.params.id;
+    console.log(req.body);
 
     //If not an admin do not allow modification of the creator field
     if (!req.currentUserPermissions.includes("admin") && req.body.creator) {
@@ -143,7 +144,7 @@ const updateExerciseWithSpecificProperties = asyncHandler(
           res.status(404).send({
             message: `Exercise was not found!`,
           });
-        } else res.send({ message: "Exercise was updated successfully." });
+        } else res.send(data);
       })
       .catch((err) => {
         res.status(500).send({
