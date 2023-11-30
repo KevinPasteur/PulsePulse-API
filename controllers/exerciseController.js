@@ -27,7 +27,7 @@ const createExercise = asyncHandler(async (req, res) => {
     videoLink,
     commentLink,
     creator: req.currentUserId,
-    status: "enabled",
+    status: "active",
   });
 
   try {
