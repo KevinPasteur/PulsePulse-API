@@ -1,6 +1,6 @@
 import express from "express";
 import Exercise from "../models/exercise.js";
-import { authenticate, authorize } from "../middleware/validateTokenHandler.js";
+import { authenticate } from "../middleware/validateTokenHandler.js";
 import {
   getExercises,
   createExercise,
@@ -23,11 +23,15 @@ router.patch("/:id", authenticate, function (req, res, next) {
       if (!authorized) {
         return res
           .status(403)
-          .send({ error: "You are not authorize to perform that" });
+          .send({ message: "You are not authorize to perform that" });
       }
       updateExerciseWithSpecificProperties(req, res);
     })
-    .catch(next);
+    .catch((error) => {
+      res.status(400).send({
+        message: "This exercise doesn't exist",
+      });
+    });
 });
 
 router.delete("/:id", authenticate, function (req, res, next) {
@@ -41,12 +45,12 @@ router.delete("/:id", authenticate, function (req, res, next) {
       if (!authorized) {
         return res
           .status(403)
-          .send({ error: "You are not authorize to perform that" });
+          .send({ message: "You are not authorize to perform that" });
       }
 
       if (!exercise) {
         return res.status(400).send({
-          message: "This workout doesn't exist",
+          message: "This exercise doesn't exist",
         });
       }
 
