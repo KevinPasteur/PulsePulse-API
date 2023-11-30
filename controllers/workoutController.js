@@ -171,8 +171,6 @@ const deleteAWorkout = asyncHandler(async (req, res) => {
     });
 });
 
-const removeAnExerciseFromAWorkout = asyncHandler(async (req, res) => {});
-
 export {
   createWorkout,
   getWorkouts,
