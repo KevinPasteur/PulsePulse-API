@@ -32,6 +32,7 @@ const exerciseSchema = new Schema(
       ref: "User",
     },
     workouts: [{ type: Schema.Types.ObjectId, ref: "Workout" }],
+    status: String,
   },
   { timestamps: true }
 );
