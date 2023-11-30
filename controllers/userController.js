@@ -71,26 +71,61 @@ const loginUser = asyncHandler(async (req, res, next) => {
     .catch(next);
 });
 
-const updateUser = asyncHandler(async (req, res, next) => {
-  if (!req.body) {
-    return res.status(400).send({
-      message: "Data to update can not be empty!",
-    });
-  }
-  const id = req.params.id;
-  // Attempt to find a user with the provided id
-  User.findByIdAndUpdate(id, req.body)
-    .then((data) => {
-      if (!data) {
-        res.status(404).send({
-          message: `User was not found!`,
-        });
-      } else res.send({ message: "User was updated successfully." });
-    })
-    .catch((err) => {
-      res.status(500).send({
-        message: "Error updating user",
+const updateUserWithSpecificProperties = asyncHandler(
+  async (req, res, next) => {
+    if (!req.body) {
+      return res.status(400).send({
+        message: "Data to update can not be empty!",
       });
+    }
+
+    const id = req.params.id;
+
+    // Attempt to find a user with the provided id
+    User.findByIdAndUpdate(id, req.body)
+      .then((data) => {
+        if (!data) {
+          res.status(404).send({
+            message: `User was not found!`,
+          });
+        } else res.send({ message: "User was updated successfully." });
+      })
+      .catch((err) => {
+        res.status(500).send({
+          message: "Error updating user",
+        });
+      })
+      .catch(next);
+  }
+);
+
+const updateUserWithAllProperties = asyncHandler(async (req, res, next) => {
+  // Update properties present in the request body
+  if (req.body.username !== undefined) {
+    req.user.username = req.body.username;
+  }
+  if (req.body.email !== undefined) {
+    req.user.email = req.body.email;
+  }
+  if (req.body.password !== undefined) {
+    req.user.password = req.body.password;
+  }
+
+  //If not an admin do not allow modification of the creator field
+  if (req.currentUserPermissions.includes("admin")) {
+    if (req.body.status !== undefined) {
+      req.user.status = req.body.status;
+    }
+    if (req.body.role !== undefined) {
+      req.user.role = req.body.role;
+    }
+  }
+
+  req.user
+    .save()
+    .then((savedUser) => {
+      debug(`Updated user "${savedUser.username}"`);
+      res.send(savedUser);
     })
     .catch(next);
 });
@@ -107,7 +142,10 @@ const deleteUser = asyncHandler(async (req, res) => {
 
   const id = req.params.id;
 
-  await User.findByIdAndUpdate(id, { status: "deleted", updatedAt: new Date() })
+  await User.findByIdAndUpdate(id, {
+    status: "disabled",
+    updatedAt: new Date(),
+  })
     .then((data) => {
       if (!data) {
         res.status(404).send({
@@ -154,7 +192,8 @@ export {
   registerUser,
   loginUser,
   currentUser,
-  updateUser,
+  updateUserWithSpecificProperties,
+  updateUserWithAllProperties,
   deleteUser,
   getUsers,
 };
