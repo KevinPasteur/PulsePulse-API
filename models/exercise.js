@@ -25,6 +25,12 @@ const exerciseSchema = new Schema(
     bodyPart: {
       type: Array,
       required: true,
+      validate: {
+        validator: function (array) {
+          return array && array.length > 0;
+        },
+        message: "bodyPart is required.",
+      },
     },
     videoLink: String,
     commentLink: String,
