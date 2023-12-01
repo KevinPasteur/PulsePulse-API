@@ -813,9 +813,8 @@ components:
     Workouts:
       type: array
       items:
-        allOf:
+        anyOf:
           - $ref: "#/components/schemas/Workout1"
-          - $ref: "#/components/schemas/Workout2"
     Workout1:
       type: object
       properties:
@@ -836,23 +835,6 @@ components:
         totalExercises:
           type: number
           example: 0
-      Workout2:
-        type: object
-        properties:
-          _id:
-            type: string
-            example: 6568b9e239f06cd2cab706e6
-          name:
-            type: string
-            example: Road to Champion
-          creator:
-            type: string
-            example: 6565b9304e3c06a036da2bc2
-          exercises:
-            type: array
-          totalExercises:
-            type: number
-            example: 0
     Exercise:
       type: object
       properties:
