@@ -129,7 +129,6 @@ const updateExerciseWithSpecificProperties = asyncHandler(
     }
 
     const id = req.params.id;
-    console.log(req.body);
 
     //If not an admin do not allow modification of the creator field
     if (!req.currentUserPermissions.includes("admin") && req.body.creator) {
