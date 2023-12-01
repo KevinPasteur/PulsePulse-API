@@ -210,7 +210,64 @@ paths:
                   message:
                     type: string
                     example: Error updating user
-
+    delete:
+      tags:
+        - Users
+      summary: Supprimer un utilisateur
+      description: Passe le status de l'utilisateur en "disabled" / Nécessite d'être authentifié avec un token JWT / Nécessite une autorisation d'administrateur / Un admin ne peut pas se supprimer lui-même
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User deleted successfully.
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not provided
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorize to perform that
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User was not found!
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating user
   /api/v1/exercises:
     get:
       tags:
@@ -513,6 +570,234 @@ paths:
                   message:
                     type: string
                     example: Error updating exercise
+  /api/v1/workouts:
+    get:
+      tags:
+        - Workouts
+      summary: Récupérer la liste des workouts
+      description: Retourne les workouts / Le champ "totalExercises" est une aggrégation qui compte le total des exercices dans un workout / Nécessite d'être authentifié avec un token JWT / Pour récupérer les workouts "disabled", il faut un compte admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: isPublic
+          schema:
+            type: string
+          description: Récupère les workouts publiques
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workouts"
+    post:
+      tags:
+        - Workouts
+      summary: Permet de créer un workout
+      description: Créer un workout / Nécessite d'être authentifié avec un token JWT
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Crée un workout
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Back Day's
+                description:
+                  type: string
+                  example: Le jour du dos
+                isPublic:
+                  type: boolean
+                  example: true
+              required:
+                - name
+                - isPublic
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: 6568c8ca398847becdd791f4
+                  name:
+                    type: string
+                    example: Back Day's
+                  description:
+                    type: string
+                    example: Le jour du dos
+                  isPublic:
+                    type: boolean
+                    example: true
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Workout data is not valid
+  /api/v1/workouts/{id}:
+    patch:
+      tags:
+        - Workouts
+      summary: Permet de modifier partiellement un workout
+      description: Permet de modifier partiellement un workout / Nécessite d'être authentifié avec un token JWT / Pour modifier le champ "creator" un compte avec le status "Admin" est demandé / Un utilisateur basique ne peut pas modifier un workout qu'il n'a pas créé
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Modifie partiellement les données d'un workout avec les champs trouvés dans la requête
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  example: Le jour du dos, à faire les vendredis
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Back Day's
+                  description:
+                    type: string
+                    example: Le jour du dos, à faire les vendredis
+                  isPublic:
+                    type: boolean
+                    example: false
+                  creator:
+                    type: string
+                    example: 6568d0c34b9655a4e9a77777
+                  exercises:
+                    type: array
+                    example: []
+                  createdAt:
+                    type: date
+                    example: 2023-11-28T15:36:22.095Z
+                  updatedAt:
+                    type: date
+                    example: 2023-11-28T15:36:22.095Z
+                  id:
+                    type: integer
+                    example: 656608f69530cd508607694a
+
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Data to update can not be empty!
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to change creator
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Workout was not found!
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating workout
+    delete:
+      tags:
+        - Workouts
+      summary: Supprimer un workout
+      description: Supprime un workout de la base de données / Nécessite d'être authentifié avec un token JWT / Un utilisateur ne peut pas supprimer un workout qu'il n'a pas créé
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Workout deleted successfully.
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Workout not provided
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorize to perform that
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Workout was not found!
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating workout
 components:
   securitySchemes:
     bearerAuth:
@@ -525,6 +810,49 @@ components:
       items:
         anyOf:
           - $ref: "#/components/schemas/User1"
+    Workouts:
+      type: array
+      items:
+        allOf:
+          - $ref: "#/components/schemas/Workout1"
+          - $ref: "#/components/schemas/Workout2"
+    Workout1:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 6568b7f1b867c9347b1b7764
+        name:
+          type: string
+          example: Road to Apollon
+        description:
+          type: string
+          example: Le programme préféré de Tibo
+        creator:
+          type: string
+          example: 6565b9304e3c06a036da2bc2
+        exercises:
+          type: array
+        totalExercises:
+          type: number
+          example: 0
+      Workout2:
+        type: object
+        properties:
+          _id:
+            type: string
+            example: 6568b9e239f06cd2cab706e6
+          name:
+            type: string
+            example: Road to Champion
+          creator:
+            type: string
+            example: 6565b9304e3c06a036da2bc2
+          exercises:
+            type: array
+          totalExercises:
+            type: number
+            example: 0
     Exercise:
       type: object
       properties:
