@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  description: "API REST pour l'application mobile de fitness PulsePulse"
+  description: "API REST pour l'application mobile de planification de programme fitness PulsePulse"
   version: "1.0.0"
   title: "PulsePulse API"
 tags:
@@ -16,7 +16,7 @@ paths:
       tags:
         - Users
       summary: Récupérer la liste des utilisateurs
-      description: Retourne un tableau contenant les utilisateurs / Nécessite d'être authentifié avec un token JWT
+      description: Retourne un tableau contenant les utilisateurs / Nécessite d'être authentifié avec un token JWT et d'avoir un compte admin
       security:
         - bearerAuth: []
       responses:
