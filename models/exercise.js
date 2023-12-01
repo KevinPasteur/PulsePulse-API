@@ -11,11 +11,12 @@ const exerciseSchema = new Schema(
     description: String,
     duration: {
       type: Number,
-      required: true,
     },
     repetitions: {
       type: Number,
-      required: true,
+    },
+    sets: {
+      type: Number,
     },
     level: {
       type: String,
@@ -24,6 +25,12 @@ const exerciseSchema = new Schema(
     bodyPart: {
       type: Array,
       required: true,
+      validate: {
+        validator: function (array) {
+          return array && array.length > 0;
+        },
+        message: "bodyPart is required.",
+      },
     },
     videoLink: String,
     commentLink: String,
@@ -32,6 +39,7 @@ const exerciseSchema = new Schema(
       ref: "User",
     },
     workouts: [{ type: Schema.Types.ObjectId, ref: "Workout" }],
+    status: String,
   },
   { timestamps: true }
 );

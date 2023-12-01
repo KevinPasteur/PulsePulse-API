@@ -41,12 +41,19 @@ export function createWebSocketServer(httpServer) {
   });
 }
 
-export function broadcastMessage(message) {
+export function broadcastMessage(message, action, type, info = null) {
+  const messageFormatted = {
+    message: message,
+    action: action,
+    type: type,
+    info: info,
+  };
+
   // Map each send operation to a Promise.
   const sendPromises = clients.map((client) => {
     return new Promise((resolve, reject) => {
       try {
-        client.send(JSON.stringify(message), (error) => {
+        client.send(JSON.stringify(messageFormatted), (error) => {
           if (error) {
             reject({
               success: false,
