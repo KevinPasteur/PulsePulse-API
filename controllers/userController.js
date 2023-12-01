@@ -8,7 +8,7 @@ import { jwtSecret } from "../config.js";
 const signJwt = promisify(jwt.sign);
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password } = req.body;
 
   const userAvailable = await User.findOne({ username, email });
   if (userAvailable) {
@@ -27,7 +27,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password: hashedPassword,
     email,
     status: "active",
-    role: role ?? "user",
+    role: "user",
   });
 
   try {
