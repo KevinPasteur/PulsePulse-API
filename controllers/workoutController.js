@@ -33,7 +33,7 @@ const createWorkout = asyncHandler(async (req, res) => {
 
   if (workout) {
     const workoutFormatted = {
-      _id: workout.id,
+      id: workout.id,
       name: workout.name,
       description: workout.description,
       isPublic: workout.isPublic,
@@ -142,7 +142,7 @@ const updateWorkoutWithSpecificProperties = asyncHandler(
           res.status(404).send({
             message: `Workout was not found!`,
           });
-        } else res.send({ message: "Workout was updated successfully." });
+        } else res.send(data);
       })
       .catch((err) => {
         res.status(500).send({
