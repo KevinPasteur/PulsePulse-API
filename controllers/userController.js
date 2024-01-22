@@ -67,7 +67,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
         // Sign the JWT and send it to the client
         return signJwt(payload, jwtSecret).then((jwt) => {
           res.send({
-            message: `Welcome ${user.username}!`,
+            user: user,
             token: jwt,
           });
         });
