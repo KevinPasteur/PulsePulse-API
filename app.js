@@ -10,8 +10,15 @@ import fs from "fs";
 import yaml from "js-yaml";
 import swaggerUi from "swagger-ui-express";
 import "dotenv/config";
+import cors from "cors";
 
 const app = express();
+
+// CORS middleware
+const corsOptions = {
+  origin: "http://localhost:8100", // l'origine de votre application Angular
+  optionsSuccessStatus: 200, // certains navigateurs (IE11, divers SmartTV) chokent sur 204
+};
 
 mongoose
   .connect(process.env.DATABASE_URL ?? "mongodb://localhost:27017/pulsepulse")
@@ -24,6 +31,7 @@ if (process.env.NODE_ENV !== "test") {
   mongoose.set("debug", true);
 }
 
+app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
