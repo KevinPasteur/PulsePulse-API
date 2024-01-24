@@ -173,6 +173,16 @@ const getExercisesFromAUser = asyncHandler(async (req, res, next) => {
   });
 });
 
+const getWorkoutsFromAUser = asyncHandler(async (req, res, next) => {
+  const userWithWorkouts = await User.findById(req.params.id)
+    .populate("workouts")
+    .exec();
+
+  res.send({
+    workouts: userWithWorkouts.workouts,
+  });
+});
+
 export {
   registerUser,
   loginUser,
@@ -181,4 +191,5 @@ export {
   deleteUser,
   getUsers,
   getExercisesFromAUser,
+  getWorkoutsFromAUser,
 };
