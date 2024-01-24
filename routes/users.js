@@ -26,6 +26,23 @@ router.patch("/:id", authenticate, function (req, res, next) {
       });
     });
 });
+router.get("/:id/exercises", authenticate, function (req, res, next) {
+  User.findById(req.params.id)
+    .exec()
+    .then((user) => {
+      if (user.id === req.currentUserId) {
+        userController.getExercisesFromAUser(req, res, next);
+      } else
+        return res
+          .status(400)
+          .send({ message: "You are not authorize to perform that" });
+    })
+    .catch((err) => {
+      return res.status(400).send({
+        message: "User not found",
+      });
+    });
+});
 
 router.post("/register", userController.registerUser);
 router.post("/login", userController.loginUser);

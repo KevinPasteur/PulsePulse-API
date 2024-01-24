@@ -4,6 +4,7 @@ import { promisify } from "util";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 import { jwtSecret } from "../config.js";
+import exercise from "../models/exercise.js";
 
 const signJwt = promisify(jwt.sign);
 
@@ -162,6 +163,16 @@ const getUsers = asyncHandler(async (req, res) => {
     .catch((err) => next(err));
 });
 
+const getExercisesFromAUser = asyncHandler(async (req, res, next) => {
+  const userWithExercises = await User.findById(req.params.id)
+    .populate("exercises")
+    .exec();
+
+  res.send({
+    exercises: userWithExercises.exercises,
+  });
+});
+
 export {
   registerUser,
   loginUser,
@@ -169,4 +180,5 @@ export {
   updateUserWithSpecificProperties,
   deleteUser,
   getUsers,
+  getExercisesFromAUser,
 };

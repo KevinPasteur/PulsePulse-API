@@ -8,10 +8,12 @@ import {
   deleteAnExercise,
 } from "../controllers/exerciseController.js";
 
+import upload from "../utils/upload.helper.js";
+
 const router = express.Router();
 
 router.get("/", authenticate, getExercises);
-router.post("/", authenticate, createExercise);
+router.post("/", authenticate, upload.single("audio"), createExercise);
 router.patch("/:id", authenticate, function (req, res, next) {
   Exercise.findById(req.params.id)
     .exec()

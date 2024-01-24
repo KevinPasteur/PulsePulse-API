@@ -1,9 +1,17 @@
 import asyncHandler from "express-async-handler";
 import Exercise from "../models/exercise.js";
 import User from "../models/user.js";
+import { Upload } from "@aws-sdk/lib-storage";
+import { S3Client } from "@aws-sdk/client-s3";
+
 import { broadcastMessage } from "../ws.js";
 
 const createExercise = asyncHandler(async (req, res) => {
+  console.log(JSON.parse(req.body.data));
+  console.log("controller");
+
+  console.log("controller2");
+
   const {
     name,
     description,
@@ -12,9 +20,8 @@ const createExercise = asyncHandler(async (req, res) => {
     sets,
     level,
     bodyPart,
-    videoLink,
     commentLink,
-  } = req.body;
+  } = JSON.parse(req.body.data);
 
   const exercise = new Exercise({
     name,
@@ -24,11 +31,16 @@ const createExercise = asyncHandler(async (req, res) => {
     sets,
     level,
     bodyPart,
-    videoLink,
     commentLink,
     creator: req.currentUserId,
     status: "active",
   });
+
+  if (req.file && req.file.location) {
+    exerciseData.videoLink = req.file.location; // Ajoutez videoLink uniquement si req.file existe
+  }
+
+  console.log(exercise);
 
   try {
     await exercise.validate();
