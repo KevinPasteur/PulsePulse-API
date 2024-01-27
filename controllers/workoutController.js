@@ -171,10 +171,48 @@ const deleteAWorkout = asyncHandler(async (req, res) => {
     });
 });
 
+const getWorkoutFromId = asyncHandler(async (req, res) => {
+  Workout.findById(req.params.id)
+    .then((data) => {
+      if (!data) {
+        res.status(404).send({
+          message: `Workout not found.`,
+        });
+      } else {
+        res.send(data);
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message,
+      });
+    });
+});
+
+const getExercisesFromWorkoutId = asyncHandler(async (req, res) => {
+  Workout.findById(req.params.id)
+    .then((data) => {
+      if (!data) {
+        res.status(404).send({
+          message: `Workout not found.`,
+        });
+      } else {
+        res.send(data.exercises);
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message,
+      });
+    });
+});
+
 export {
   createWorkout,
   getWorkouts,
   getPublicWorkouts,
   deleteAWorkout,
   updateWorkoutWithSpecificProperties,
+  getWorkoutFromId,
+  getExercisesFromWorkoutId,
 };

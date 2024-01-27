@@ -163,6 +163,16 @@ const getUsers = asyncHandler(async (req, res) => {
     .catch((err) => next(err));
 });
 
+const getUser = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.params.id).exec();
+  if (!user) {
+    return res.status(400).send({
+      message: "User not found",
+    });
+  }
+  res.send(user);
+});
+
 const getExercisesFromAUser = asyncHandler(async (req, res, next) => {
   const userWithExercises = await User.findById(req.params.id)
     .populate("exercises")
@@ -190,6 +200,7 @@ export {
   updateUserWithSpecificProperties,
   deleteUser,
   getUsers,
+  getUser,
   getExercisesFromAUser,
   getWorkoutsFromAUser,
 };

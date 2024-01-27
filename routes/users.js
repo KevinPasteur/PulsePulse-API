@@ -6,6 +6,24 @@ const router = express.Router();
 
 router.get("/", authenticate, authorize("admin"), userController.getUsers);
 
+router.get("/:id", authenticate, function (req, res, next) {
+  User.findById(req.params.id)
+    .exec()
+    .then((user) => {
+      if (user.id === req.currentUserId) {
+        userController.getUser(req, res, next);
+      } else
+        return res
+          .status(400)
+          .send({ message: "You are not authorize to perform that" });
+    })
+    .catch((err) => {
+      return res.status(400).send({
+        message: "User not found",
+      });
+    });
+});
+
 router.patch("/:id", authenticate, function (req, res, next) {
   User.findById(req.params.id)
     .exec()
