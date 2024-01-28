@@ -4,11 +4,12 @@ import User from "../models/user.js";
 import { broadcastMessage } from "../ws.js";
 
 const createWorkout = asyncHandler(async (req, res) => {
-  const { name, description, isPublic } = req.body;
+  const { name, description, isPublic, bodyPart } = req.body;
 
   const workout = new Workout({
     name,
     description,
+    bodyPart,
     isPublic,
     creator: req.currentUserId,
   });
@@ -35,6 +36,7 @@ const createWorkout = asyncHandler(async (req, res) => {
     const workoutFormatted = {
       id: workout.id,
       name: workout.name,
+      bodyPart: workout.bodyPart,
       description: workout.description,
       isPublic: workout.isPublic,
     };
@@ -64,6 +66,7 @@ const getWorkouts = asyncHandler(async (req, res) => {
       $project: {
         name: 1,
         description: 1,
+        bodyPart: 1,
         creator: 1,
         exercises: 1,
         isPublic: 1,
@@ -97,6 +100,7 @@ const getPublicWorkouts = asyncHandler(async (req, res) => {
       $project: {
         name: 1,
         description: 1,
+        bodyPart: 1,
         creator: 1,
         exercises: 1,
         totalExercises: {
@@ -179,7 +183,10 @@ const getWorkoutFromId = asyncHandler(async (req, res) => {
           message: `Workout not found.`,
         });
       } else {
-        res.send(data);
+        const activeExercises = data.exercises.filter(
+          (exercise) => exercise.status === "active"
+        );
+        res.send(activeExercises);
       }
     })
     .catch((err) => {
@@ -207,6 +214,30 @@ const getExercisesFromWorkoutId = asyncHandler(async (req, res) => {
     });
 });
 
+const overwriteWorkout = asyncHandler(async (req, res) => {
+  if (!req.body) {
+    return res.status(400).send({
+      message: "Data to update can not be empty!",
+    });
+  }
+
+  const id = req.params.id;
+
+  Workout.findByIdAndUpdate(id, req.body)
+    .then((data) => {
+      if (!data) {
+        res.status(404).send({
+          message: `Workout was not found!`,
+        });
+      } else res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: "Error updating workout",
+      });
+    });
+});
+
 export {
   createWorkout,
   getWorkouts,
@@ -215,4 +246,5 @@ export {
   updateWorkoutWithSpecificProperties,
   getWorkoutFromId,
   getExercisesFromWorkoutId,
+  overwriteWorkout,
 };

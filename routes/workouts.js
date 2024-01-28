@@ -6,6 +6,7 @@ import {
   createWorkout,
   deleteAWorkout,
   updateWorkoutWithSpecificProperties,
+  overwriteWorkout,
 } from "../controllers/workoutController.js";
 import { authenticate } from "../middleware/validateTokenHandler.js";
 import Workout from "../models/workout.js";
@@ -128,7 +129,11 @@ router.get("/:id/exercises", authenticate, function (req, res, next) {
         });
       }
 
-      res.send(workout.exercises);
+      const activeExercises = workout.exercises.filter(
+        (exercise) => exercise.status === "active"
+      );
+
+      res.send(activeExercises);
     })
     .catch(next);
 });
@@ -174,6 +179,35 @@ router.delete("/:id", authenticate, function (req, res, next) {
       }
 
       deleteAWorkout(req, res);
+    })
+    .catch((error) => {
+      res.status(400).send({
+        message: error.message,
+      });
+    });
+});
+
+router.put("/:id", authenticate, function (req, res, next) {
+  Workout.findById(req.params.id)
+    .exec()
+    .then((workout) => {
+      const authorized =
+        req.currentUserPermissions.includes("admin") ||
+        req.currentUserId === workout.creator._id.toString();
+
+      if (!authorized) {
+        return res
+          .status(403)
+          .send({ error: "You are not authorize to perform that" });
+      }
+
+      if (!workout) {
+        return res.status(400).send({
+          message: "This workout doesn't exist",
+        });
+      }
+
+      overwriteWorkout(req, res);
     })
     .catch((error) => {
       res.status(400).send({

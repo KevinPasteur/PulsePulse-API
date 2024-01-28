@@ -11,6 +11,10 @@ const workoutSchema = new Schema(
     description: {
       type: String,
     },
+    bodyPart: {
+      type: String,
+      required: true,
+    },
     isPublic: {
       type: Boolean,
       required: true,
