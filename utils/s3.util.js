@@ -3,7 +3,7 @@ const dotenv = await import("dotenv");
 dotenv.config();
 
 const config = {
-  region: process.env.AWS_REGION,
+  region: process.env.REGION,
   credentials: {
     accessKeyId: process.env.ACCESS_KEY_ID,
     secretAccessKey: process.env.SECRET_ACCESS_KEY,
