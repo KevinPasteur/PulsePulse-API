@@ -175,7 +175,10 @@ const getUser = asyncHandler(async (req, res, next) => {
 
 const getExercisesFromAUser = asyncHandler(async (req, res, next) => {
   const userWithExercises = await User.findById(req.params.id)
-    .populate("exercises")
+    .populate({
+      path: "exercises",
+      match: { status: "active" },
+    })
     .exec();
 
   res.send({

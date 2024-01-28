@@ -51,6 +51,62 @@ router.get("/:id", authenticate, function (req, res, next) {
     .catch(next);
 });
 
+router.post(
+  "/:id/exercises/:exerciseId",
+  authenticate,
+  function (req, res, next) {
+    Workout.findById(req.params.id)
+      .exec()
+      .then((workout) => {
+        if (!workout) {
+          return res.status(400).send({
+            message: "This workout doesn't exist",
+          });
+        }
+
+        if (!workout.exercises.includes(req.params.exerciseId)) {
+          workout.exercises.push(req.params.exerciseId);
+        }
+
+        workout.save().then(() => {
+          res.send(workout);
+        });
+      })
+      .catch((error) => {
+        res.status(400).send({
+          message: error.message,
+        });
+      });
+  }
+);
+
+router.delete(
+  "/:id/exercises/:exerciseId",
+  authenticate,
+  function (req, res, next) {
+    Workout.findById(req.params.id)
+      .exec()
+      .then((workout) => {
+        if (!workout) {
+          return res.status(400).send({
+            message: "This workout doesn't exist",
+          });
+        }
+
+        workout.exercises.pull(req.params.exerciseId);
+
+        workout.save().then(() => {
+          res.send(workout);
+        });
+      })
+      .catch((error) => {
+        res.status(400).send({
+          message: error.message,
+        });
+      });
+  }
+);
+
 router.get("/:id/exercises", authenticate, function (req, res, next) {
   Workout.findById(req.params.id)
     .populate("exercises")

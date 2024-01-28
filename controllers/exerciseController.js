@@ -1,17 +1,10 @@
 import asyncHandler from "express-async-handler";
 import Exercise from "../models/exercise.js";
 import User from "../models/user.js";
-import { Upload } from "@aws-sdk/lib-storage";
-import { S3Client } from "@aws-sdk/client-s3";
 
 import { broadcastMessage } from "../ws.js";
 
 const createExercise = asyncHandler(async (req, res) => {
-  console.log(JSON.parse(req.body.data));
-  console.log("controller");
-
-  console.log("controller2");
-
   const {
     name,
     description,
@@ -21,6 +14,7 @@ const createExercise = asyncHandler(async (req, res) => {
     level,
     bodyPart,
     commentLink,
+    videoLink,
   } = JSON.parse(req.body.data);
 
   const exercise = new Exercise({
@@ -32,20 +26,26 @@ const createExercise = asyncHandler(async (req, res) => {
     level,
     bodyPart,
     commentLink,
+    videoLink,
     creator: req.currentUserId,
     status: "active",
   });
-
-  if (req.file && req.file.location) {
-    exerciseData.videoLink = req.file.location; // Ajoutez videoLink uniquement si req.file existe
-  }
-
-  console.log(exercise);
 
   try {
     await exercise.validate();
   } catch (err) {
     return res.status(400).send(err.message);
+  }
+  console.log(req.files);
+  console.log(req.files["audio"]);
+  console.log(req.files["video"]);
+
+  if (req.files["audio"] && req.files["audio"][0].location) {
+    exercise.commentLink = req.files["audio"][0].location; // Ajoutez videoLink uniquement si req.file existe
+  }
+
+  if (req.files["video"] && req.files["video"][0].location) {
+    exercise.videoLink = req.files["video"][0].location; // Ajoutez videoLink uniquement si req.file existe
   }
 
   await exercise.save();
@@ -92,14 +92,44 @@ const createExercise = asyncHandler(async (req, res) => {
   }
 });
 
+const overwriteExercise = async (req, res) => {
+  try {
+    const id = req.params.id;
+    // Vérifiez que le corps de la requête n'est pas vide
+    if (!req.body) {
+      return res.status(400).send({
+        message: "Data to update can not be empty!",
+      });
+    }
+
+    // Mettez à jour l'exercice en utilisant overwrite: true
+    const updatedExercise = await Exercise.findByIdAndUpdate(id, req.body, {
+      new: true,
+      overwrite: true,
+    });
+
+    if (!updatedExercise) {
+      return res.status(404).send({
+        message: "Exercise not found",
+      });
+    }
+    res.send(updatedExercise);
+  } catch (error) {
+    res.status(500).send({
+      message: "Error updating exercise",
+    });
+  }
+};
+
 const getExercises = asyncHandler(async (req, res, next) => {
   let page;
   let pageSize;
-  Exercise.find()
+  const filter = { status: "active" };
+
+  Exercise.find(filter)
     .countDocuments()
     .then((total) => {
-      let query = Exercise.find();
-
+      let query = Exercise.find(filter);
       // Parse the "page" param (default to 1 if invalid)
       page = parseInt(req.query.page, 10);
       if (isNaN(page) || page < 1) {
@@ -200,4 +230,5 @@ export {
   createExercise,
   updateExerciseWithSpecificProperties,
   deleteAnExercise,
+  overwriteExercise,
 };
